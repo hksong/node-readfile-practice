@@ -2,19 +2,31 @@ var http = require('http');
 
 var url1 = 'http://omdbapi.com/?i=tt0241527';
 var url2 = 'http://omdbapi.com/?i=tt0295297';
+
 var responses = [];
 
-storeInResponses = function(res, req, toLog) {
+http.request(url1, function(res) {
+  res.setEncoding('utf8');
+  var str;
   res.on('data', function (data) {
-    responses.push(data.toString());
+    str = JSON.parse(data);
+
   });
 
   res.on('end', function() {
-    if (toLog) console.log(responses);
-  });
-};
+    responses.push(str);
+    http.request(url2, function(res) {
+      res.setEncoding('utf8');
+      var str;
+      res.on('data', function (data) {
+        str = JSON.parse(data);
 
-http.get(url1, storeInResponses);
-http.get(url2, function(res, req) {
-  storeInResponses(res, req, true);
-});
+      });
+
+      res.on('end', function() {
+        responses.push(str);
+        console.log(responses);
+      });
+    }).end();
+  });
+}).end();
